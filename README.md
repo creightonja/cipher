@@ -6,7 +6,7 @@
 
 ## Description
 
-This is a website that allows users see reviews and coupons for a bookstore.
+This is a website that allows users cipherize text.
 
 ## Setup
 
