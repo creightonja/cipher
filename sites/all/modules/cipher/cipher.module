@@ -23,7 +23,7 @@ function cipher_form() {
         '#title' => 'Cipher string',
         '#type' => 'textfield',
         '#description' => t('Please enter the word(s) you would like to cipher.'),
-        '#element_validate' => array('element_validate_integer_positive'),
+        // '#element_validate' => array('element_validate_integer_positive'),
         '#required' => TRUE,
     );
     $form['the_shift'] = array(
@@ -57,8 +57,13 @@ function cipher_form_submit($form, &$form_state) {
     $the_shift = $form_state['values']['the_shift'];
     $left_right = $form_state['values']['left_right'];
 
-    $cipher_output;
+    $cipher_output = $the_string;
 
     $_SESSION['cipher_output'] = $cipher_output;
     $form_state['redirect'] = 'cipher_result';
+}
+
+function cipher_result() {
+    $output = $_SESSION['cipher_output'];
+    return "The cipher is: $output";
 }
