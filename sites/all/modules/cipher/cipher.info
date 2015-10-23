@@ -1,0 +1,5 @@
+name = Cipher
+description = Ciphers a string into a coded string.
+package = Thee Cipher Module
+core = 7.x
+files[] = cipher.module
