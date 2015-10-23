@@ -128,6 +128,6 @@ function element_validate_letters($element){
         }
     }
     if ($found_unallowed > 0){
-        form_error($element, t('Only characters allowed are: a-z, A-Z, , . ! ?'));
+        form_error($element, t('Only characters allowed are: a-z, A-Z, , . ! ?, you have '. $found_unallowed . ' errors'));
     }
 }
