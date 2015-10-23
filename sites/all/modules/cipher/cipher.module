@@ -23,7 +23,7 @@ function cipher_form() {
         '#title' => 'Cipher string',
         '#type' => 'textfield',
         '#description' => t('Please enter the word(s) you would like to cipher.'),
-        // '#element_validate' => array('element_validate_integer_positive'),
+        '#element_validate' => array('element_validate_letters'),
         '#required' => TRUE,
     );
     $form['the_shift'] = array(
@@ -35,11 +35,9 @@ function cipher_form() {
     );
     $form['left_right'] = array(
         '#title' => 'Choose left or right cipher',
-        '#type' => 'radios',
-        '#options' => array(
-          'left' => 'Left',
-          'right' => 'Right',
-        ),
+        '#type' => 'textfield',
+        '#description' => t('Please enter the number of characters to shift to.'),
+        '#element_validate' => array('element_validate_right_left'),
         '#required' => TRUE,
     );
 
@@ -53,9 +51,10 @@ function cipher_form() {
 
 function cipher_form_submit($form, &$form_state) {
 
-    $the_string = $form_state['values']['the_string'];
+    $the_string = strtolower($form_state['values']['the_string']);
     $the_shift = intval($form_state['values']['the_shift']);
-    $left_right = $form_state['values']['left_right'];
+    $left_right = strtolower($form_state['values']['left_right']);
+    $ciphered_array = array();
 
     if ($the_shift > 26){
         $shift_value = $the_shift % 26;
@@ -68,25 +67,37 @@ function cipher_form_submit($form, &$form_state) {
         $cipher_shift_count = $shift_value;
     }
 
-    $cipher_output = cipher_word($the_string, $cipher_shift_count);
-    $_SESSION['cipher_output'] = $cipher_output;
+    $exploded_string = explode(" ", $the_string);
+    foreach($exploded_string as $word){
+        $cipher_output = cipher_word($word, $cipher_shift_count);
+        array_push($ciphered_array, $cipher_output);
+    }
+
+    $the_output = implode(" ", $ciphered_array);
+    $_SESSION['cipher_output'] = $the_output;
     $form_state['redirect'] = 'cipher_result';
 }
 
 function cipher_word($word, $shift) {
     $letter_conversion = ['a' => 0, 'b' => 1, 'c' => 2, 'd' => 3, 'e' => 4, 'f' => 5, 'g' => 6, 'h' => 7, 'i' => 8, 'j' => 9, 'k' => 10, 'l' => 11, 'm' => 12, 'n' => 13, 'o' => 14, 'p' => 15, 'q' => 16, 'r' => 17, 's' => 18, 't' => 19, 'u' => 20, 'v' => 21, 'w' => 22, 'x' => 23, 'y' => 24, 'z' => 25];
     $letter_array = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+    $punctuation_array = array('!', '?', '.', ',');
     $cipher_letter_array = array();
     $split_word = str_split($word);
     foreach($split_word as $letter) {
-        $letter_value = $letter_conversion[$letter];
-        $cipher_value = $letter_value + $shift;
-        if ($cipher_value > 25) {
-            $cipher_value = $cipher_value + 25;
-        } else if ($cipher_value < 0){
-            $cipher_value = $cipher_value - 25;
+        if (!in_array($letter, $punctuation_array)){
+            $letter_value = $letter_conversion[$letter];
+            $cipher_value = $letter_value + $shift;
+            if ($cipher_value > 25) {
+                $cipher_value = $cipher_value - 25;
+            } else if ($cipher_value < 0){
+                $cipher_value = $cipher_value + 25;
+            }
+            array_push($cipher_letter_array, $letter_array[$cipher_value]);
+        } else {
+            array_push($cipher_letter_array, $letter);
         }
-        array_push($cipher_letter_array, $letter_array[$cipher_value]);
+
     }
     $cipher_implode = implode("", $cipher_letter_array);
     return $cipher_implode;
@@ -95,4 +106,28 @@ function cipher_word($word, $shift) {
 function cipher_result() {
     $output = $_SESSION['cipher_output'];
     return "The cipher is: $output";
+}
+
+function element_validate_right_left($element){
+    $right_left_lower = strtolower($element['#value']);
+    if (($right_left_lower != 'right')) {
+        if (($right_left_lower != 'left')){
+            form_error($element, t('Must be right or left'));
+        }
+    }
+}
+
+function element_validate_letters($element){
+    $input_lower = strtolower($element['#value']);
+    $split_input = str_split($input_lower);
+    $found_unallowed = 0;
+    $allowable_characters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '!', '?', '.', ',', ' '];
+    foreach($split_input as $letter){
+        if (!in_array($letter, $allowable_characters)){
+            $found_unallowed++;
+        }
+    }
+    if ($found_unallowed > 0){
+        form_error($element, t('Only characters allowed are: a-z, A-Z, , . ! ?'));
+    }
 }
