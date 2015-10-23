@@ -17,3 +17,48 @@ function cipher_menu() {
     );
     return $items;
 }
+
+function cipher_form() {
+    $form['the_string'] = array(
+        '#title' => 'Cipher string',
+        '#type' => 'textfield',
+        '#description' => t('Please enter the word(s) you would like to cipher.'),
+        '#element_validate' => array('element_validate_integer_positive'),
+        '#required' => TRUE,
+    );
+    $form['the_shift'] = array(
+        '#title' => 'Shift distance',
+        '#type' => 'textfield',
+        '#description' => t('Please enter the number of characters to shift to.'),
+        '#element_validate' => array('element_validate_integer_positive'),
+        '#required' => TRUE,
+    );
+    $form['left_right'] = array(
+        '#title' => 'Choose left or right cipher',
+        '#type' => 'radios',
+        '#options' => array(
+          'left' => 'Left',
+          'right' => 'Right',
+        ),
+        '#required' => TRUE,
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Cipherize',
+    );
+
+    return $form;
+}
+
+function cipher_form_submit($form, &$form_state) {
+
+    $the_string = $form_state['values']['the_string'];
+    $the_shift = $form_state['values']['the_shift'];
+    $left_right = $form_state['values']['left_right'];
+
+    $cipher_output;
+
+    $_SESSION['cipher_output'] = $cipher_output;
+    $form_state['redirect'] = 'cipher_result';
+}
